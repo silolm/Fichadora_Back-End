@@ -1,5 +1,6 @@
 <?php
-include '../utils/db.php';
+require_once '../utils/db.php';
+require_once '../utils/auth.php';
 
 function get()
 {
@@ -31,18 +32,32 @@ function put()
 {
     $body = json_decode(file_get_contents("php://input"), true);
     if (!empty($body))
-        dbQuery("UPDATE clockinouts SET `out` = '" . $body['out'] . "'," . "pauseIn" . " = '" . $body['pauseIn'] . "'," . "pauseOut" . " = '" . $body['pauseOut'] . "' WHERE id LIKE " . $body['id']);
+        dbQuery("UPDATE clockinouts SET `out` = '" . $body['out'] . "'," . "pauseIn" . " = '" . $body['pauseIn']
+            . "'," . "pauseOut" . " = '" . $body['pauseOut'] . "' WHERE id LIKE " . $body['id']);
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
-switch ($method) {
-    case "GET":
-        get();
-        break;
-    case "POST":
-        post();
-        break;
-    case "PUT":
-        put();
+function haveAuth()
+{
+    try {
+        $data = decryptToken(getallheaders()['Authorization']);
+    }catch (Exception $error){
+        return false;
+    }
+    if ($data->role === 'admin') return true;
+    if ($data->DNI === $_GET['employee']) return true;
+    return false;
+}
 
+if (haveAuth()) {
+    $method = $_SERVER['REQUEST_METHOD'];
+    switch ($method) {
+        case "GET":
+            get();
+            break;
+        case "POST":
+            post();
+            break;
+        case "PUT":
+            put();
+    }
 }

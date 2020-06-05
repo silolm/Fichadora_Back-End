@@ -1,3 +1,3 @@
 <?php
-include '../utils/db.php';
+require_once '../utils/db.php';
 

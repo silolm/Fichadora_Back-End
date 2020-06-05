@@ -1,13 +1,10 @@
 <?php
-$host = "127.0.0.1";
-$username = "root";
-$password = "";
-$db = "backend";
+require_once 'constants.php';
 
 function dbQuery($query, $callback = null)
 {
     # Crear conexión
-    $conn = mysqli_connect($GLOBALS["host"], $GLOBALS["username"], $GLOBALS["password"], $GLOBALS["db"]);
+    $conn = mysqli_connect(HOST, USERNAME, PASSWORD, DB);
     # Comprobar conexión
     if (!$conn)
         die("Conexi&ocacuten fallida: " . mysqli_connect_error());
