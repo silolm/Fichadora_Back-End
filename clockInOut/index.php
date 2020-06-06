@@ -4,7 +4,13 @@ require_once '../utils/auth.php';
 
 function get()
 {
-    $keep = dbQuery('SELECT * FROM clockinouts', function ($row) {
+    $employee = $_GET['employee'];
+    $query = 'SELECT * FROM clockinouts';
+
+    if (isset($employee))
+        $query = $query . ' WHERE employee LIKE "' . $employee . '"';
+
+    $keep = dbQuery($query, function ($row) {
         return ([
             "id" => $row[0],
             "employee" => $row[1],
@@ -36,28 +42,14 @@ function put()
             . "'," . "pauseOut" . " = '" . $body['pauseOut'] . "' WHERE id LIKE " . $body['id']);
 }
 
-function haveAuth()
-{
-    try {
-        $data = decryptToken(getallheaders()['Authorization']);
-    }catch (Exception $error){
-        return false;
-    }
-    if ($data->role === 'admin') return true;
-    if ($data->DNI === $_GET['employee']) return true;
-    return false;
-}
+selectAction(['GET' => get, 'POST' => post, 'PUT' => put], function ($jwtData) {
+    if ($jwtData->role === 'admin') return Permisions::all;
+    if ($jwtData->role === 'clocker') return Permisions::write;
 
-if (haveAuth()) {
-    $method = $_SERVER['REQUEST_METHOD'];
-    switch ($method) {
-        case "GET":
-            get();
-            break;
-        case "POST":
-            post();
-            break;
-        case "PUT":
-            put();
+    if (isset($_GET)) {
+        $employee = $_GET['employee'];
+
+        if (isset($employee) && $employee === $jwtData->DNI) return Permisions::all;
     }
-}
+    return Permisions::none;
+});
