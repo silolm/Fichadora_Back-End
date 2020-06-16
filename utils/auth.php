@@ -12,14 +12,14 @@ abstract class Permisions
     const all = 777;
 }
 
-function hasAuth($permisions, $callback)
+function hasAuth($permisions, $callback, $data)
 {
     try {
-        $data = JWT::decode(getallheaders()['Authorization'], MASTERKEY, array('HS256'));
+        $jwtData = JWT::decode(getallheaders()['Authorization'], MASTERKEY, array('HS256'));
     } catch (Exception $error) {
         return false;
     }
-    $per = $callback($data);
+    $per = $callback($jwtData, $data);
 
     if ($per == Permisions::all) return true;
     if ($per == $permisions) return true;
@@ -30,27 +30,44 @@ function hasAuth($permisions, $callback)
 function selectAction($actions, $callback)
 {
     $method = $_SERVER['REQUEST_METHOD'];
-    switch ($method) {
-        case "GET":
-            if (hasAuth(Permisions::read, $callback)) {
-                $actions['GET']();
-                return;
-            }
-            break;
-        case "POST":
-            if (hasAuth(Permisions::write, $callback)) {
-                $actions['POST']();
-                return;
-            }
-            break;
-        case "PUT":
-            if (hasAuth(Permisions::write, $callback)) {
-                $actions['PUT']();
-                return;
-            }
-            break;
+    $data = NULL;
+
+    try {
+        switch ($method) {
+            case "GET":
+                $data = $_GET;
+                if (hasAuth(Permisions::read, $callback, $data)) {
+                    $result = $actions['GET']($data);
+                    header("HTTP/1.1 200 Ok");
+                    echo $result;
+                    return;
+                }
+                break;
+            case "POST":
+                $data = json_decode(file_get_contents("php://input"), true); 
+                if (hasAuth(Permisions::write, $callback, $data)) {
+                    $result = $actions['POST']($data);
+                    header("HTTP/1.1 204 No Content");
+                    echo $result;
+                    return;
+                }
+                break;
+            case "PUT":
+                $data = json_decode(file_get_contents("php://input"), true);
+                if (hasAuth(Permisions::write, $callback, $data)) {
+                    $result = $actions['PUT']($data);
+                    header("HTTP/1.1 204 No Content");
+                    echo $result;
+                    return;
+                }
+                break;
+        }
+    }
+    catch(Exception $error) {
+        header("HTTP/1.1 400 Bad Request");
+        exit;
     }
 
-      header("HTTP/1.1 401 Unauthorized");
-      exit;
+    header("HTTP/1.1 401 Unauthorized");
+    exit;
 }

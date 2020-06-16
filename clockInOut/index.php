@@ -2,9 +2,9 @@
 require_once '../utils/db.php';
 require_once '../utils/auth.php';
 
-function get()
+function get($data)
 {
-    $employee = $_GET['employee'];
+    $employee = $data['employee'];
     $query = 'SELECT * FROM clockinouts';
 
     if (isset($employee))
@@ -20,12 +20,12 @@ function get()
             "pauseOut" => $row[5]
         ]);
     });
-    echo json_encode($keep);
+    
+    return json_encode($keep);
 }
 
-function post()
+function post($body)
 {
-    $body = json_decode(file_get_contents("php://input"), true);
     if (!empty($body)) {
         $out = $_GET['out'] ? "'" . $_GET['out'] . "'" : 'NULL'; // set the default value
         $pauseIn = $_GET['pauseIn'] ? "'" . $_GET['pauseIn'] . "'" : 'NULL';
@@ -35,7 +35,7 @@ function post()
             . $body['employee'] . "','" . $body['in'] . "', $out , $pauseIn, $pauseOut)");
 
 
-        echo json_encode(['id' => $id]);
+        return json_encode(['id' => $id]);
     }
 }
 
@@ -47,19 +47,9 @@ function put()
             . "'," . "pauseOut" . " = '" . $body['pauseOut'] . "' WHERE id LIKE " . $body['id']);
 }
 
-selectAction(['GET' => get, 'POST' => post, 'PUT' => put], function ($jwtData) {
+selectAction(['GET' => get, 'POST' => post, 'PUT' => put], function ($jwtData, $data) {
     if ($jwtData->role === 'admin') return Permisions::all;
     if ($jwtData->role === 'clocker') return Permisions::write;
-
-    if (isset($_POST)) {
-        $body = json_decode(file_get_contents("php://input"), true);
-        if (isset($body['employee']) && $body['employee'] === $jwtData->DNI) return Permisions::all;
-    }
-
-    if (isset($_GET)) {
-        $employee = $_GET['employee'];
-
-        if (isset($employee) && $employee === $jwtData->DNI) return Permisions::all;
-    }
+    if (isset($data['employee']) && $data['employee'] === $jwtData->DNI) return Permisions::all;
     return Permisions::none;
 });
