@@ -31,6 +31,10 @@ function post($data)
         curl_setopt($ch, CURLOPT_URL, URLAUTH);
         curl_setopt($ch, CURLOPT_POST, true);
         $payload = json_encode( $payload );
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: ' . getallheaders()['Authorization']
+        ));
         curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec ($ch);

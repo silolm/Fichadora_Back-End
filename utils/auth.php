@@ -45,8 +45,6 @@ function selectAction($actions, $callback)
                 break;
             case "POST":
                 $data = json_decode(file_get_contents("php://input"), true); 
-                echo $data;
-                exit;
                 if (hasAuth(Permisions::write, $callback, $data)) {
                     $result = $actions['POST']($data);
                     header("HTTP/1.1 204 No Content");
