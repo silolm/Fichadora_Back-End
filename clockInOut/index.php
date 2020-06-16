@@ -27,8 +27,13 @@ function post()
 {
     $body = json_decode(file_get_contents("php://input"), true);
     if (!empty($body)) {
+        $out = $_GET['out'] ? "'" . $_GET['out'] . "'" : 'NULL'; // set the default value
+        $pauseIn = $_GET['pauseIn'] ? "'" . $_GET['pauseIn'] . "'" : 'NULL';
+        $pauseOut = $_GET['pauseOut'] ? "'" . $_GET['pauseOut'] . "'" : 'NULL';
+
         $id = dbQuery("INSERT INTO clockinouts (`id`, `employee`, `in`, `out`, `pauseIn`, `pauseOut`) VALUES (NULL, '"
-            . $body['employee'] . "','" . $body['in'] . "','" . $body['out'] . "','" . $body['pauseIn'] . "','" . $body['pauseOut'] . "')");
+            . $body['employee'] . "','" . $body['in'] . "', $out , $pauseIn, $pauseOut)");
+
 
         echo json_encode(['id' => $id]);
     }
@@ -45,6 +50,11 @@ function put()
 selectAction(['GET' => get, 'POST' => post, 'PUT' => put], function ($jwtData) {
     if ($jwtData->role === 'admin') return Permisions::all;
     if ($jwtData->role === 'clocker') return Permisions::write;
+
+    if (isset($_POST)) {
+        $body = json_decode(file_get_contents("php://input"), true);
+        if (isset($body['employee']) && $body['employee'] === $jwtData->DNI) return Permisions::all;
+    }
 
     if (isset($_GET)) {
         $employee = $_GET['employee'];

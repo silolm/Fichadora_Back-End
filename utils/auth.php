@@ -51,6 +51,6 @@ function selectAction($actions, $callback)
             break;
     }
 
-    header("HTTP/1.1 401 Unauthorized");
-    exit;
+      header("HTTP/1.1 401 Unauthorized");
+      exit;
 }
