@@ -1,5 +1,7 @@
 <?php
 require_once '../utils/db.php';
+require_once '../utils/auth.php';
+require_once '../utils/constants.php';
 
 function get($data)
 {
