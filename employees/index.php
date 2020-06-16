@@ -38,7 +38,7 @@ function post($data)
     }
 }
 
-selectAction(['GET' => get, 'POST' => post, 'PUT' => put], function ($jwtData, $data) {
+selectAction(['GET' => get, 'POST' => post], function ($jwtData, $data) {
     if ($jwtData->role === 'admin') return Permisions::all;
     return Permisions::none;
 });

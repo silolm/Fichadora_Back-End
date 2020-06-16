@@ -20,16 +20,16 @@ function get($data)
             "pauseOut" => $row[5]
         ]);
     });
-    
+
     return json_encode($keep);
 }
 
 function post($body)
 {
     if (!empty($body)) {
-        $out = $_GET['out'] ? "'" . $_GET['out'] . "'" : 'NULL'; // set the default value
-        $pauseIn = $_GET['pauseIn'] ? "'" . $_GET['pauseIn'] . "'" : 'NULL';
-        $pauseOut = $_GET['pauseOut'] ? "'" . $_GET['pauseOut'] . "'" : 'NULL';
+        $out = $body['out'] ? "'" . $body['out'] . "'" : 'NULL'; // set the default value
+        $pauseIn = $body['pauseIn'] ? "'" . $body['pauseIn'] . "'" : 'NULL';
+        $pauseOut = $body['pauseOut'] ? "'" . $body['pauseOut'] . "'" : 'NULL';
 
         $id = dbQuery("INSERT INTO clockinouts (`id`, `employee`, `in`, `out`, `pauseIn`, `pauseOut`) VALUES (NULL, '"
             . $body['employee'] . "','" . $body['in'] . "', $out , $pauseIn, $pauseOut)");
